@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">La4</string>
+    <string name="settings">SETTINGS</string>
+    <string name="room">Room</string>
+    <string name="port">Port</string>
+    <string name="server_ip">Server Ip</string>
+    <string name="_1924">1924</string>
+    <string name="_8089">8089</string>
+    <string name="_192_168_100_100">192.168.100.100</string>
+    <string name="connection_status">not connection</string>
+    <string name="control">control</string>
+    <string name="vod">vod</string>
+    <string name="hotel">hotel</string>
+    <string name="udp">udp</string>
+    <string name="tcp">tcp</string>
+    <string name="alarm_ip">Alarm Ip</string>
+    <string name="alarm_port">Alarm Port</string>
+    <string name="set">SET</string>
+    <string name="go">GO</string>
+    <string name="live">LIVE</string>
+    <string name="taxi">Taxi</string>
+    <string name="youtube">YOUTUBE</string>
+    <string name="room_control">room control</string>
+    <string name="only_live">ONLY LIVE</string>
+    <string name="alarm">ALARM !!!</string>
+</resources>

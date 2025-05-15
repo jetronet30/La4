@@ -1,0 +1,18 @@
+<resources>
+    <color name="background_gradient_start">#000000</color>
+    <color name="background_gradient_end">#DDDDDD</color>
+    <color name="fastlane_background">#0096a6</color>
+    <color name="search_opaque">#ffaa3f</color>
+    <color name="main_button_text_color">#ffaa3f</color>
+    <color name="default_background">#3d3d3d</color>
+    <color name="green">#05FA4A</color>
+    <color name="red">#FF0000</color>
+    <color name="default_setting_bac">#577358</color>
+    <color name="focused_setting_bac">#49954B</color>
+    <color name="default_main_bac">#005C7C5D</color>
+    <color name="focused_main_bac">#B729782F</color>
+    <color name="text_color_gama">#B706ED1B</color>
+    <color name="chan_bar_gama">#A100BCD4</color>
+    <color name="gold">#FFD700</color>
+
+</resources>
