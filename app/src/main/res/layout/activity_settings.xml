@@ -265,6 +265,18 @@
         app:layout_constraintHorizontal_bias="0.605"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <Button
+        android:id="@+id/tv_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="60dp"
+        android:background="@color/default_main_bac"
+        android:text="TV Settings"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.282"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <Switch
         android:id="@+id/only_live"
         android:layout_width="221dp"

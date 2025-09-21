@@ -1,10 +1,15 @@
 package com.jaba.la4;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -46,7 +51,12 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         InitSettings.init_settings(this);
+        setContentView(R.layout.activity_main);
+        Log.d("MainActivity", "Started");
+
+        startLockTaskOptimized();
 
         if (InitSettings.only_live) {
             Intent intent = new Intent(this, Live.class);
@@ -56,7 +66,6 @@ public class MainActivity extends FragmentActivity {
             return;
         }
 
-        setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         alarmView = findViewById(R.id.alarm);
@@ -110,6 +119,40 @@ public class MainActivity extends FragmentActivity {
         });
     }
 
+    private void startLockTaskOptimized() {
+        DevicePolicyManager dpm = (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
+        ComponentName adminComponent = new ComponentName(this, MyDeviceAdminReceiver.class);
+
+        if (dpm != null && dpm.isDeviceOwnerApp(getPackageName())) {
+            dpm.setLockTaskPackages(adminComponent, new String[]{
+                    getPackageName(),
+                    "com.android.tv.settings",
+                    "com.google.android.youtube.tv"
+            });
+
+            // ასინქრონული LockTask სტარტი UI Thread-ის არ დაბლოკვისთვის
+            new Handler().post(() -> {
+                try {
+                    if (!isInLockTaskMode()) {
+                        startLockTask();
+                        Log.d("MainActivity", "LockTask started (kiosk mode) async");
+                    }
+                } catch (Exception e) {
+                    Log.e("MainActivity", "Failed to start LockTask", e);
+                }
+            });
+        }
+    }
+
+    private boolean isInLockTaskMode() {
+        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return am.getLockTaskModeState() != ActivityManager.LOCK_TASK_MODE_NONE;
+        } else {
+            return am.isInLockTaskMode();
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -153,7 +196,7 @@ public class MainActivity extends FragmentActivity {
                 public void run() {
                     fetchAndUpdateWeather();
                     updateWeatherImage();
-                    weatherHandler.postDelayed(this, 60 * 60 * 1000); // hourly
+                    weatherHandler.postDelayed(this, 60 * 60 * 1000); // ყოველ 1 საათში
                 }
             };
         }
@@ -164,6 +207,7 @@ public class MainActivity extends FragmentActivity {
         player = new ExoPlayer.Builder(this).build();
         playerView.setPlayer(player);
         MediaItem mediaItem = MediaItem.fromUri(InitSettings.h_bac_video);
+        //MediaItem mediaItem = MediaItem.fromUri("https://hostv.ge/downloads/bac.mp4");
         player.setMediaItem(mediaItem);
         player.setRepeatMode(ExoPlayer.REPEAT_MODE_ALL);
         player.prepare();
@@ -196,20 +240,15 @@ public class MainActivity extends FragmentActivity {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             resetInactivityTimer();
 
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_BACK:
-                case KeyEvent.KEYCODE_HOME:
-                case KeyEvent.KEYCODE_MENU:
-                case KeyEvent.KEYCODE_ESCAPE:
-                    return true;
-                default:
-                    keyBuffer.append(keyCode);
-                    if (keyBuffer.length() > 10) {
-                        keyBuffer.delete(0, keyBuffer.length() - 10);
-                    }
-                    resetTimer();
-                    break;
+            if (keyCode == KeyEvent.KEYCODE_HOME) {
+                return true;
             }
+
+            keyBuffer.append(keyCode);
+            if (keyBuffer.length() > 10) {
+                keyBuffer.delete(0, keyBuffer.length() - 10);
+            }
+            resetTimer();
         }
         return super.onKeyDown(keyCode, event);
     }
@@ -244,6 +283,14 @@ public class MainActivity extends FragmentActivity {
         if (player != null) {
             player.release();
             player = null;
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (player == null) {
+            initializePlayer();
         }
     }
 

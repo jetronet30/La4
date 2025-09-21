@@ -1,7 +1,7 @@
 package com.jaba.la4;
 
-
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -25,6 +25,7 @@ public class SettingsAct extends FragmentActivity {
 
         Button set = findViewById(R.id.set);
         Button go = findViewById(R.id.go);
+        Button tvSettings = findViewById(R.id.tv_settings);
         EditText ip = findViewById(R.id.ip);
         EditText port = findViewById(R.id.port);
         EditText room = findViewById(R.id.room);
@@ -36,7 +37,6 @@ public class SettingsAct extends FragmentActivity {
         Switch alarm_type = findViewById(R.id.alarm_type);
         Switch only_live = findViewById(R.id.only_live);
 
-
         TextView tv_status = findViewById(R.id.tv_status);
         if (InitSettings.tv_status) {
             tv_status.setText("connection ok");
@@ -46,10 +46,9 @@ public class SettingsAct extends FragmentActivity {
             tv_status.setTextColor(Color.parseColor("#FF0000"));
         }
 
-
         set.setOnFocusChangeListener(new FocusEffect());
         go.setOnFocusChangeListener(new FocusEffect());
-
+        tvSettings.setOnFocusChangeListener(new FocusEffect());
 
         ip.setText(InitSettings.ip);
         port.setText(String.valueOf(InitSettings.port));
@@ -61,7 +60,6 @@ public class SettingsAct extends FragmentActivity {
         hotel.setChecked(InitSettings.hotel);
         alarm_type.setChecked(InitSettings.alarm_type);
         only_live.setChecked(InitSettings.only_live);
-
 
         set.setOnClickListener(v -> {
             try {
@@ -94,7 +92,6 @@ public class SettingsAct extends FragmentActivity {
                 tv_status.setText("not connection");
                 tv_status.setTextColor(Color.parseColor("#FF0000"));
             }
-
         });
 
         // Go button action
@@ -102,6 +99,20 @@ public class SettingsAct extends FragmentActivity {
             Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+        });
+
+        // TV Settings button action
+        tvSettings.setOnClickListener(v -> {
+            stopLockTask(); // კიოსკიდან გამოსვლა საჭიროების შემთხვევაში
+
+            try {
+                Intent intent = new Intent(Intent.ACTION_MAIN);
+                intent.setAction(android.provider.Settings.ACTION_SETTINGS);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } catch (Exception e) {
+                Toast.makeText(this, "TV Settings app not found", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -119,6 +130,7 @@ public class SettingsAct extends FragmentActivity {
             v.setBackgroundColor(Color.parseColor(hasFocus ? "#B729782F" : "#185C7C5D"));
         }
     }
+
     @Override
     public boolean onKeyDown(int keyCode, android.view.KeyEvent event) {
         switch (keyCode) {
@@ -132,5 +144,4 @@ public class SettingsAct extends FragmentActivity {
                 return super.onKeyDown(keyCode, event);
         }
     }
-
 }

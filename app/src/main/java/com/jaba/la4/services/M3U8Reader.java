@@ -29,6 +29,7 @@ public class M3U8Reader {
             try {
                 int index = 0;
                 URL url = new URL(InitSettings.h_playlist);
+                //URL url = new URL("https://hostv.ge/downloads/mainlist.m3u8");
                 BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
                 String line;
                 String name = null;

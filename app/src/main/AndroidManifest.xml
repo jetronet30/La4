@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.jaba.la4">
 
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="29" />
-    <uses-permission android:name="android.permission.READ_HOME_APP_SEARCH_DATA" />
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+    <uses-permission android:name="android.permission.READ_HOME_APP_SEARCH_DATA" />
 
-    <uses-feature
-        android:name="android.hardware.touchscreen"
-        android:required="false" />
-    <uses-feature
-        android:name="android.software.leanback"
-        android:required="true" />
+    <!-- TV Features -->
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <uses-feature android:name="android.software.leanback" android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -22,26 +21,50 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.La4"
         android:usesCleartextTraffic="true">
-        <activity
-            android:name=".Live"
-            android:exported="false" /> <!-- Settings Activity -->
-        <activity
-            android:name=".SettingsAct"
-            android:exported="false" /> <!-- Main Launcher Activity -->
+
+        <!-- Main Launcher Activity -->
         <activity
             android:name=".MainActivity"
             android:banner="@drawable/icon_api"
-            android:exported="true"
             android:icon="@drawable/icon_api"
-            android:logo="@drawable/icon_api">
+            android:logo="@drawable/icon_api"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Other Activities -->
+        <activity android:name=".Live" android:exported="false" />
+        <activity android:name=".SettingsAct" android:exported="false" />
+
+        <!-- Boot Completed Receiver -->
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Device Admin Receiver -->
+        <receiver
+            android:name=".MyDeviceAdminReceiver"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin_receiver" />
+        </receiver>
+
     </application>
 
 </manifest>
