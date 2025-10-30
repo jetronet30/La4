@@ -6,7 +6,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
 public class AlarmService {
-
     private static final int BUFFER_SIZE = 1024;
     private static boolean isRunning = false;
     private static DatagramSocket socket;

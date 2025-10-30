@@ -135,7 +135,6 @@ public class InitSettings {
         h_bac_video = baseUrl + "/bacvideo";
         h_weather_val = baseUrl + "/weather_values";
     }
-
     private static void check_status_tv() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
