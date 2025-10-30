@@ -98,20 +98,20 @@
                 tools:layout_editor_absoluteY="48dp" />
 
             <TextView
-                android:layout_width="65dp"
-                android:layout_height="21dp"
+                android:layout_width="42dp"
+                android:layout_height="16dp"
                 android:layout_marginBottom="4dp"
                 android:shadowColor="#80000000"
-                android:shadowDx="2"
-                android:shadowDy="2"
-                android:shadowRadius="4"
+                android:shadowDx="3"
+                android:shadowDy="4"
+                android:shadowRadius="5"
                 android:text="WIFI"
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
-                android:textSize="20sp"
+                android:textSize="15sp"
                 app:layout_constraintBottom_toTopOf="@+id/wifi_qr_img"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintHorizontal_bias="0.018"
                 app:layout_constraintStart_toStartOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.media3.ui.PlayerView>

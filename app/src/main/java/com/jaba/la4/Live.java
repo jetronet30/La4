@@ -38,35 +38,30 @@ import com.jaba.la4.services.InitSettings;
 import com.jaba.la4.services.M3U8Reader;
 
 public class Live extends FragmentActivity {
-
     private static int index = 1;
-
     private TextView chan_num, select_num;
     private LinearLayout chan_bar, chan_scroll;
     private ConstraintLayout alarmView;
     private PlayerView playerView;
     private ExoPlayer player;
-
     private boolean isChanBarVisible = false;
-
     private final Handler handler = new Handler();
     private final Handler chanBarHandler = new Handler();
     private final Handler numberInputHandler = new Handler();
     private final Handler handlerSettingsAct = new Handler();
-
     private final StringBuilder numberInput = new StringBuilder();
     private final StringBuilder keyBuffer = new StringBuilder();
-
     private Runnable timeoutSettingAct;
     private final Runnable hideChanNumRunnable = () -> chan_num.setVisibility(View.INVISIBLE);
     private final Runnable hideChanBarRunnable = () -> {
         chan_bar.setVisibility(View.INVISIBLE);
         isChanBarVisible = false;
     };
-
     private final Runnable numberInputRunnable = this::handleNumberInput;
-
     private int lastKeyPressed = -1;
+
+    // ახალი ფლაგი: თუ მომხმარებელი HOME-დან დაბრუნდა
+    private boolean isReturningFromHome = false;
 
     @SuppressLint("WrongViewCast")
     @OptIn(markerClass = UnstableApi.class)
@@ -75,10 +70,8 @@ public class Live extends FragmentActivity {
         super.onCreate(savedInstanceState);
         InitSettings.init_settings(this);
         M3U8Reader.read_M3_async();
-
         setContentView(R.layout.activity_live);
         initViews();
-
         alarmView = findViewById(R.id.alarm);
         AlarmService.startListening(message -> runOnUiThread(() -> {
             if ("ALARM".equalsIgnoreCase(message)) {
@@ -100,16 +93,13 @@ public class Live extends FragmentActivity {
     private void initViews() {
         playerView = findViewById(R.id.player_live);
         playerView.setKeepScreenOn(true);
-
         chan_num = findViewById(R.id.chan_num);
         select_num = findViewById(R.id.select_num);
         chan_bar = findViewById(R.id.chan_bar);
         chan_scroll = findViewById(R.id.chan_scroll);
-
         chan_num.setVisibility(View.INVISIBLE);
         select_num.setVisibility(View.INVISIBLE);
         select_num.setText(String.valueOf(index));
-
         timeoutSettingAct = () -> {
             lastKeyPressed = -1;
             keyBuffer.setLength(0);
@@ -126,16 +116,19 @@ public class Live extends FragmentActivity {
                 isChanBarVisible = false;
                 return true;
             } else {
-                Intent intent = new Intent(Live.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                finish();
+                if (!InitSettings.only_live) {
+                    Intent intent = new Intent(Live.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    finishAffinity();
+                }
                 return true;
             }
         }
 
         if (isChanBarVisible) {
-            // Allow D-pad navigation inside chan_bar when open
             return super.onKeyDown(keyCode, event);
         }
 
@@ -187,7 +180,6 @@ public class Live extends FragmentActivity {
 
     private void handleNumberInput() {
         if (numberInput.length() == 0) return;
-
         try {
             int selectedIndex = Integer.parseInt(numberInput.toString());
             Chan selectedChan = get_by_index(selectedIndex);
@@ -198,7 +190,6 @@ public class Live extends FragmentActivity {
             }
         } catch (NumberFormatException ignored) {
         }
-
         numberInput.setLength(0);
         select_num.setVisibility(View.INVISIBLE);
     }
@@ -212,12 +203,10 @@ public class Live extends FragmentActivity {
 
     private void toggleChanBarVisibility() {
         chan_scroll.removeAllViews();
-
         for (Chan ch : M3U8Reader.chan_list) {
             ImageButton imgButton = new ImageButton(this);
             imgButton.setImageResource(R.drawable.icon_api);
             imgButton.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
@@ -226,9 +215,7 @@ public class Live extends FragmentActivity {
             imgButton.setLayoutParams(params);
             imgButton.setBackgroundColor(Color.TRANSPARENT);
             imgButton.setAdjustViewBounds(true);
-
             imgButton.setOnFocusChangeListener(new FocusHighlighter());
-
             imgButton.setOnClickListener(v -> {
                 index = ch.getIndex();
                 playStream(ch.getUrl());
@@ -236,23 +223,18 @@ public class Live extends FragmentActivity {
                 chan_bar.setVisibility(View.INVISIBLE);
                 isChanBarVisible = false;
             });
-
             if (ch.getIndex() == index) {
                 imgButton.setSelected(true);
                 imgButton.requestFocus();
             }
-
             Glide.with(this)
                     .load(ch.getIcon())
                     .apply(new RequestOptions().error(R.drawable.icon_api).override(100, 90))
                     .into(imgButton);
-
             chan_scroll.addView(imgButton);
         }
-
         isChanBarVisible = !isChanBarVisible;
         chan_bar.setVisibility(isChanBarVisible ? View.VISIBLE : View.INVISIBLE);
-
         chanBarHandler.removeCallbacks(hideChanBarRunnable);
         if (isChanBarVisible) {
             chanBarHandler.postDelayed(hideChanBarRunnable, 10000);
@@ -268,7 +250,6 @@ public class Live extends FragmentActivity {
         if (player == null) {
             player = new ExoPlayer.Builder(this).setLoadControl(loadControl).build();
             playerView.setPlayer(player);
-
             player.addListener(new Player.Listener() {
                 @Override
                 public void onPlayerError(@NonNull PlaybackException error) {
@@ -300,13 +281,28 @@ public class Live extends FragmentActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (player != null) player.setPlayWhenReady(false);
+        if (player != null) {
+            player.setPlayWhenReady(false);
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (player != null) player.setPlayWhenReady(true);
+
+        if (player != null) {
+            player.setPlayWhenReady(true);
+        }
+
+        // თუ დავბრუნდით HOME-დან — განაახლე არხი
+        if (isReturningFromHome) {
+            isReturningFromHome = false;
+            Chan currentChan = get_by_index(index);
+            if (currentChan != null) {
+                playStream(currentChan.getUrl());
+                showChannelNumber();
+            }
+        }
     }
 
     @Override
@@ -316,6 +312,13 @@ public class Live extends FragmentActivity {
             player.release();
             player = null;
         }
+    }
+
+    // HOME ღილაკის დაჭერის დადგენა
+    @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        isReturningFromHome = true; // მომავალში onResume-ში გამოვიყენებთ
     }
 
     private Chan get_by_index(int index) {
